@@ -181,6 +181,82 @@ void ler_dados(char* buffer, reg_dados* novo_reg_dados){
         gravar_dados(novo_reg_dados, pos_campo, token);//preenche na struct
         pos_campo++;//aumenta contador de campos 
         token = zstrtok(NULL, ",");//pega próximo campo
+        if(token == NULL){
+          break;
+        }
     }
 }
 
+/*
+
+Função responsável por ler registros como entradas do teclado. Recebe um ponteiro de struct do tipo (reg_dados). É declarado
+um buffer, e um inteiro temporário, os campos são lidos em sequência. Primeiro idConecta, seguido pela utilização da função
+(scan_quote_string) para os campos string que estão entre "". A string sem "" é colocado no buffer, e é verificado
+utilizando (strlen) se a string é vazia ou não. Se for vazia, isto indica que o campo é NULO, e no registro em memória
+principal ele é tratado conforme as especificações para campos nulos, fixos ou variáveis, isto é, é colocado '|' para campos
+variáveis, e '$' para os fixos. Para os campos sem "", isto é, os inteiros, utiliza-se (scanf) para string, e é colocado no
+buffer. Em seguida, é feita a conversão para inteiro utilizando (atoi) e a variável tmp, e este valor é então colocado no
+registro. Caso (atoi) retorne 0, o campo é nulo, e -1 é colocado no registro.
+
+*/
+void ler_registros_dados_teclado(reg_dados* reg){
+
+    char* buffer[24];
+    int tmp = 0;
+
+
+    scanf("%d", &reg->idConecta);//idConecta (nunca nulo)
+
+    scan_quote_string(buffer);//nomePoPs
+    if(strlen(buffer) == 0){
+        strcpy(reg->nomePoPs, "|");
+    }
+    else{
+        strcat(buffer, "|");
+        strcpy(reg->nomePoPs, buffer);
+    }
+
+    scan_quote_string(buffer);//nomePais
+    if(strlen(buffer) == 0){
+        strcpy(reg->nomePais, "|");
+    }
+    else{
+        strcat(buffer, "|");
+        strcpy(reg->nomePais, buffer);
+    }
+
+    scan_quote_string(buffer);//siglaPais
+    if(strlen(buffer) == 0){
+        strcpy(reg->siglaPais, "$$");
+    }
+    else{
+        strcpy(reg->siglaPais, buffer);
+    }
+
+    scanf("%s", buffer);//idPoPsConectado
+    tmp = atoi(buffer);
+    if(tmp == 0){
+        reg->idPoPsConectado = -1;
+    }
+    else{
+        reg->idPoPsConectado = tmp;
+    }
+ 
+    scan_quote_string(buffer);//unidadeMedida
+    if(strlen(buffer) == 0){
+        strcpy(reg->unidadeMedida, "$");
+    }
+    else{
+        strcpy(reg->unidadeMedida, buffer);
+    }
+
+ 
+    scanf("%s", buffer);//pega velocidade
+    tmp = atoi(buffer);
+    if(tmp == 0){
+        reg->velocidade = -1;
+    }
+    else{
+        reg->velocidade = tmp;
+    }
+}

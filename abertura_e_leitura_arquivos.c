@@ -55,6 +55,26 @@ FILE* abrir_escrita_binario(char* nome_do_arquivo){
 
 /*
 
+Função responsável por retornar um ponteiro de arquivo a partir de uma string que contém o nome do arquivo, o abrindo
+no modo para leitura e escrita em binário. Se a abertura não obteve sucesso, a função é quebrada e a mensagem "Falha no processamento
+do arquivo" é exibida.
+
+*/
+FILE* abrir_leitura_e_escrita_binario(char* nome_do_arquivo){
+    FILE* arquivo;
+
+    arquivo = fopen(nome_do_arquivo, "rb+");
+
+    if(arquivo == NULL){
+        printf("Falha no processamento do arquivo \n");
+        return 0;
+    }
+
+    return arquivo;
+}
+
+/*
+
 Função que recebe uma string, um ponteiro de arquivo, e o tamanho de uma string,
 escreve usando frwrite e o tamanho informado no arquivo apontado
 
@@ -121,4 +141,24 @@ void escrever_no_arquivo_cabecalho(FILE* arquivo, reg_cabecalho* reg){
     for(int i = 0; i < (TAM_PAG_DISCO - TAM_REG_CABECALHO); i++){
         fwrite("$", sizeof(char), 1, arquivo);
     }
+}
+
+/*
+
+Função responsável por ler o registro de cabeçalho de um arquivo binário e colocar numa struct. Recebe um ponteiro para
+arquivo e um ponteiro para uma struct do tipo (reg_cabecalho). Os campos são lidos em sequência conforme o número de bytes
+ocupados. É colocado na segunda posição de "status" do registro um '\0' para tratamento interno do programa como string.
+Ao fim, é dado um (fseek) para o fim do registro de cabeçalho, dado que o tamanho é sempre fixo em uma página de disco,
+utilizando o cálculo do tamanho da página de disco - o tamanho do registro de cabeçalho.
+
+*/
+void ler_reg_cabecalho(FILE* arquivo, reg_cabecalho* reg){
+    fread(reg->status, sizeof(char), 1, arquivo);
+    reg->status[1] = '\0';
+    fread(&reg->topo, sizeof(int), 1, arquivo);
+    fread(&reg->proxRRN, sizeof(int), 1, arquivo);//lê o próximo RRN disponível
+    fread(&reg->nroRegRem, sizeof(int), 1, arquivo);//lê o número de registros removidos
+    fread(&reg->nroPagDisco, sizeof(int), 1, arquivo);//lê o número de páginas de disco
+    fread(&reg->qttCompacta, sizeof(int), 1, arquivo);//lê o qttCompacta
+    fseek(arquivo, (TAM_PAG_DISCO - TAM_REG_CABECALHO), SEEK_CUR);//pula o lixo
 }

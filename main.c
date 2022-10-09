@@ -14,10 +14,11 @@ int main(){
         case 1:
             scanf("%s", nome_do_arquivo_saida);
             comando1(nome_do_arquivo_entrada, nome_do_arquivo_saida);
-        case 2:
-            comando2(nome_do_arquivo_entrada);
+            break;
+        case 5:
+            comando5(nome_do_arquivo_entrada);
+            break;
     }
 
     return 0;
 }
-

@@ -4,5 +4,6 @@
 #include "topologiaRede.h"
 
 void binarioNaTela(char*);
+void scan_quote_string(char*);
 
 #endif
