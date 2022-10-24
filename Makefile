@@ -1,15 +1,10 @@
-all: main
+CC = gcc
+MAIN = main.c
+AUXFILES = funcoes_de_abertura.c funcoes_de_busca.c funcoes_de_escrita.c funcoes_de_leitura.c funcionalidades.c funcoes_auxiliares.c funcoes_checagem.c funcoes_fornecidas.c topologiaRede.c
+EXECNAME = main
 
-CC = clang
-override CFLAGS += -g -Wno-everything -pthread -lm
+all:
+	${CC} -o  ${EXECNAME} ${AUXFILES} ${MAIN}
 
-SRCS = $(shell find . -name '.ccls-cache' -type d -prune -o -type f -name '*.c' -print)
-
-main: $(SRCS)
-	$(CC) $(CFLAGS) $(SRCS) -o "$@"
-
-main-debug: $(SRCS)
-	$(CC) $(CFLAGS) -O0 $(SRCS) -o "$@"
-
-clean:
-	rm -f main main-debug
+run:
+	./${EXECNAME}

@@ -1,4 +1,7 @@
 #include "funcoes_auxiliares.h"
+#include "funcoes_fornecidas.h"
+#include "funcoes_de_leitura.h"
+#include "funcoes_de_escrita.h"
 
 char* zstrtok(char *str, const char *delim) {
     static char *s_str = NULL;   /* var to store last address */
@@ -162,101 +165,103 @@ int calcula_pag_disco(int cont_registros){
 
 /*
 
-Função responsável por ler os dados dos registros do arquivo csv. Recebe um buffer e um registro de dados, uma string (token)
-é criada, e um marcador da posição do campo lido do registro é inicializada como zero. Em seguida, utilizando a função
-(zstrtok), a string (token) recebe do buffer (linha do arquivo csv) uma string criada do início até o primeiro separador 
-','.
+Função responsável por conferir se o registro é removido ou não, e caso negativo printar o registro. Recebe o registro de dados e o arquivo de entrada. Declara-se o inteiro num_RRN para mandar como argumento para a função le_arquivo, e o inteiro status que recebe a flag retornada pela função le_arquivo() 
 
-Enquanto token não retornar (NULL), os dados são gravados numa struct com a função (gravar_dados), a posição do campo é 
-aumentada a cada leitura de modo a demarcar qual campo da struct será preenchido, e a string (token) é atualizada recebendo
-a partir de (NULL)(indicador da função zstrktok de continuar a partir da última posição válida) a próxima string do registro.
+Se o status recebeu 1, significa que não é o fim do arquivo. Então, é conferido se o registro foi removido, e caso negativo chama-se a função printa_registro() para printar o registro. O retorno, então, é o repasse da flag do status, 1. 
+
+Se o status recebeu 0, significa que o arquivo chegou ao fim, e a flag recebida pelo status é retornada. 
 
 */
-void ler_dados(char* buffer, reg_dados* novo_reg_dados){   
-    char* token;
-    int pos_campo = 0;
-    token = zstrtok(buffer, ",");
+int confere_remocao(reg_dados* reg, FILE* arquivo_entrada){
 
-    while(token){//enquanto não for NULL
-        gravar_dados(novo_reg_dados, pos_campo, token);//preenche na struct
-        pos_campo++;//aumenta contador de campos 
-        token = zstrtok(NULL, ",");//pega próximo campo
-        if(token == NULL){
-          break;
+    int num_RRN = 0;
+    int status = le_arquivo(reg, arquivo_entrada, &num_RRN);
+    if(status==1){//nao é o fim do arquivo
+
+        if (reg->removido[0] == '0'){ //registro não removido
+            printa_registro(reg);
         }
+        return status;
+    }
+    else{
+        return status;
     }
 }
 
 /*
 
-Função responsável por ler registros como entradas do teclado. Recebe um ponteiro de struct do tipo (reg_dados). É declarado
-um buffer, e um inteiro temporário, os campos são lidos em sequência. Primeiro idConecta, seguido pela utilização da função
-(scan_quote_string) para os campos string que estão entre "". A string sem "" é colocado no buffer, e é verificado
-utilizando (strlen) se a string é vazia ou não. Se for vazia, isto indica que o campo é NULO, e no registro em memória
-principal ele é tratado conforme as especificações para campos nulos, fixos ou variáveis, isto é, é colocado '|' para campos
-variáveis, e '$' para os fixos. Para os campos sem "", isto é, os inteiros, utiliza-se (scanf) para string, e é colocado no
-buffer. Em seguida, é feita a conversão para inteiro utilizando (atoi) e a variável tmp, e este valor é então colocado no
-registro. Caso (atoi) retorne 0, o campo é nulo, e -1 é colocado no registro.
+Função responsável por compactar o arquivo. Recebe o registro de dados, o arquivo de entrada, o arquivo de saida e o contador de registros. Declara-se o inteiro num_RRN para mandar como argumento para a função le_arquivo, e o inteiro status que recebe a flag retornada pela função le_arquivo() 
+
+Se o status recebeu 1, significa que não é o fim do arquivo. Então, é conferido se o registro foi removido, e caso negativo o contador de registro aumenta em um e o registro lido é escrito no arquivo de saida com a função escrever_no_arquivo_dados(). O retorno, então, é o repasse da flag do status, 1. 
+
+Se o status recebeu 0, significa que o arquivo chegou ao fim, e a flag recebida pelo status é retornada. 
 
 */
-void ler_registros_dados_teclado(reg_dados* reg){
-
-    char* buffer[24];
-    int tmp = 0;
-
-
-    scanf("%d", &reg->idConecta);//idConecta (nunca nulo)
-
-    scan_quote_string(buffer);//nomePoPs
-    if(strlen(buffer) == 0){
-        strcpy(reg->nomePoPs, "|");
+int compacta_arquivo( reg_dados* reg, FILE* arquivo_entrada, FILE* arquivo_saida, int*contador_reg){
+    //se o arquivo não está no final, le registro
+    int num_RRN = 0;
+    int status = le_arquivo(reg, arquivo_entrada, &num_RRN);
+    
+    if (status == 1){
+        if (reg->removido[0]=='0'){
+            (*contador_reg)++;
+            //registro não removido, escreve registro;
+            escrever_no_arquivo_dados(arquivo_saida, reg);
+        }
+        return status;
     }
     else{
-        strcat(buffer, "|");
-        strcpy(reg->nomePoPs, buffer);
+        return status;
     }
+}
 
-    scan_quote_string(buffer);//nomePais
-    if(strlen(buffer) == 0){
-        strcpy(reg->nomePais, "|");
-    }
-    else{
-        strcat(buffer, "|");
-        strcpy(reg->nomePais, buffer);
-    }
+/*
+Função responsável por remover logicamente um registro. Recebe o registro de dados, o arquivo de entrada, o registro de saida e o RRN do registro. 
 
-    scan_quote_string(buffer);//siglaPais
-    if(strlen(buffer) == 0){
-        strcpy(reg->siglaPais, "$$");
-    }
-    else{
-        strcpy(reg->siglaPais, buffer);
-    }
+Primeiro muda-se na RAM o removido do registro de dados de '0' para '1'. Então, o numero no encadeamento, no registro de dados, passa a ser o numero do topo, que esta no registro de cabecalho. Já o topo passa a receber o valor do RRN do registro removido, criando uma pilha. 
 
-    scanf("%s", buffer);//idPoPsConectado
-    tmp = atoi(buffer);
-    if(tmp == 0){
-        reg->idPoPsConectado = -1;
-    }
-    else{
-        reg->idPoPsConectado = tmp;
-    }
- 
-    scan_quote_string(buffer);//unidadeMedida
-    if(strlen(buffer) == 0){
-        strcpy(reg->unidadeMedida, "$");
-    }
-    else{
-        strcpy(reg->unidadeMedida, buffer);
-    }
+Então, é declarada a variavel inteira do byteoffset, que é em seguida calculada, variando com o valor do RRN. É feito um fseek para o byteoffset do RRN desejado, atualizado no arquivo o "removido" com a função escreve_string_no_arquivo() e o encadeamento com um fwrite(). O resto do espaço ate o final do registro é por fim preenchido com lixo, em um loop for() que faz o fwrite() do caracter $.
+*/
+void apaga_registro(FILE*arquivo_entrada, reg_dados* reg_dados, reg_cabecalho*reg_cabecalho, int* RRN ){
+  
+    reg_dados->removido[0] = '1';
+    reg_dados->encadeamento = reg_cabecalho->topo;
+    reg_cabecalho->topo = *RRN;
+   
+    int byteoffset = 0;
+    
+    byteoffset = TAM_PAG_DISCO + (TAM_REG_DADOS)*(*RRN);
 
- 
-    scanf("%s", buffer);//pega velocidade
-    tmp = atoi(buffer);
-    if(tmp == 0){
-        reg->velocidade = -1;
+    fseek(arquivo_entrada, byteoffset, SEEK_SET);
+
+    escreve_string_no_arquivo(reg_dados->removido, arquivo_entrada, strlen(reg_dados->removido));
+    fwrite(&reg_dados->encadeamento, sizeof(int), 1, arquivo_entrada);
+
+    for(int i = 0; i < (TAM_REG_DADOS - 5); i++){
+        fwrite("$", sizeof(char), 1, arquivo_entrada);
+    }
+}
+
+/*
+
+Função responsável por remover o arquivo. Recebe o nome do arquivo temporario e o nome do arquivo de entrada. São inializadas as variaveis inteiras renomear e remover como 1. 
+
+Primeiro a variavel remover recebe o retorno da função remove(), que remove o arquivo enviado, o arquivo de entrada, e retorna 0 se a operação foi realizada com sucesso. Em seguida, a variavel renomear recebe o retorno da função rename(), que renomeia o arquivo enviado no primeiro argumento (arquivo de saida) para o nome do segundo argumento (arquivo original de entrada) e retorna 0 se a operação for realizada com sucesso
+
+Se ambas operações tem sucesso, ou seja, renomear e remover são iguais a 0, é printado o binario do arquivo compactado com a função binarioNaTela. Caso contrário é printado "Falha no processamento do arquivo". 
+
+*/
+void remover_arquivo(char* nome_temp, char* nome_do_arquivo_entrada){
+    int renomear = 1;
+    int remover = 1;
+
+    remover = remove(nome_do_arquivo_entrada);
+    renomear = rename(nome_temp, nome_do_arquivo_entrada);
+
+    if (renomear==0 && remover==0){
+        binarioNaTela(nome_do_arquivo_entrada);
     }
     else{
-        reg->velocidade = tmp;
+        printf("Falha no processamento do arquivo.\n");
     }
 }

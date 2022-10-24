@@ -15,10 +15,21 @@ int main(){
             scanf("%s", nome_do_arquivo_saida);
             comando1(nome_do_arquivo_entrada, nome_do_arquivo_saida);
             break;
+        case 2:
+            comando2(nome_do_arquivo_entrada);
+            break;
+        case 3:
+            comando3(nome_do_arquivo_entrada);
+            break;
+        case 4:
+            comando4(nome_do_arquivo_entrada);
+            break;
         case 5:
             comando5(nome_do_arquivo_entrada);
             break;
+        case 6:
+            comando6(nome_do_arquivo_entrada);
+            break;
     }
-
     return 0;
 }

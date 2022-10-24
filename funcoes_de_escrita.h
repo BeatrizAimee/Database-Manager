@@ -1,14 +1,14 @@
-#ifndef __ABERTURA_H__
-#define __ABERTURA_H__
+#ifndef __ESCRITA_H__
+#define __ESCRITA_H__
 
 #include "topologiaRede.h"
 
-FILE* abrir_leitura(char*);
-FILE* abrir_leitura_binario(char*);
-FILE* abrir_escrita_binario(char*);
+//escreve no arquivo
 void escreve_string_no_arquivo(char*, FILE*, int);
 void escrever_no_arquivo_dados(FILE*, reg_dados*);
 void escrever_no_arquivo_cabecalho(FILE*, reg_cabecalho*);
-void ler_reg_cabecalho(FILE*, reg_cabecalho*);
+void atualizar_reg_cabecalho(reg_cabecalho*, FILE*, int*);
 
+//escreve na tela
+void printa_registro(reg_dados*);
 #endif
