@@ -162,7 +162,7 @@ a partir de (NULL)(indicador da função zstrktok de continuar a partir da últi
 void ler_dados(char* buffer, reg_dados* novo_reg_dados){   
     char* token;
     int pos_campo = 0;
-    token = separadpr("separa_proximo");
+    token = separador("separa_proximo");
 
     if(token[strlen(token)-1] == ' '){
         token[strlen(token)-1] = '\0';
