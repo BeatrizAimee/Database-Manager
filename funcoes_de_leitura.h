@@ -4,7 +4,7 @@
 #include "topologiaRede.h"
 
 //leitura do registro
-void le_todos_campos_do_registro(reg_dados*, FILE*);
+void le_registro(reg_dados*, FILE*);
 void le_campos_tam_fixo(reg_dados*, FILE*);
 void le_campos_tam_variavel(reg_dados*, FILE*);
 

@@ -3,7 +3,7 @@
 
 #include "topologiaRede.h"
 
-char* zstrtok(char*, const char*);
+char* separador(char*);
 void gravar_dados(reg_dados*, int, char*);
 int compacta_arquivo( reg_dados*, FILE*, FILE*, int*);
 void apaga_registro(FILE*, reg_dados* , reg_cabecalho*, int*);

@@ -16,6 +16,10 @@ Função que escreve os dados da struct do registro de dados no arquivo, recebe 
 registro de dados. Chama a função escreve_string_no_arquivo para campos referentes à strings, e fwrite para campos
 referentes à inteiros. 
 
+Para os campos de tamanho variável, primeiro faz-se a conferencia se o campo está vazio na RAM ou não possui | no final, 
+situações que ocorrem quando é lido um arquivo com a função le_arquivo, que tira o | na RAM. Nesses casos, o | é adicionado
+antes da escrita. 
+
 Como o registro de dados deve ocupar 64 bytes, é feito o cálculo do tamanho do registro atual, isto é, 20 (campos fixos)
 + o tamanho das strings referentes aos campos variáveis. Em seguida, o tamanho em bytes da quantidade de lixo a ser
 preenchida no registro é calculada por tamanho do registro de dados - tamanho do registro atual, e o loop for é usado
@@ -79,12 +83,18 @@ void escrever_no_arquivo_cabecalho(FILE* arquivo, reg_cabecalho* reg){
 
 /*
 
-Função que atualiza os dados da struct do registro de cabeçalho na RAM e depois escreve no arquivo. Recebe um ponteiro de arquivo e um ponteiro para
+Função que atualiza os dados da struct do registro de cabeçalho na RAM e depois escreve no arquivo. 
+Recebe um ponteiro de arquivo e um ponteiro para
 registro de cabeçalho, alem do ponteiro de inteiro que possui a quantidade de registros. 
 
-Passa o numero de registros removidos para 0, já que o registro acabou de ser desfragmentado. O prox RRN é o valor do cont_registros (já que ele começa a contagem em 1 e o RRN começa a contagem em 0, o valor do proxRRN e do cont_registros coincidem). O valor de compactações aumenta em 1, o status é resetado para '1' e o topo para -1, indicando que não há mais registros removidos. Já o novo numero de pagina de disco é calculado com a função calcula_pag_disco(). 
+Passa o numero de registros removidos para 0, já que o registro acabou de ser desfragmentado. O prox RRN é 
+o valor do cont_registros (já que ele começa a contagem em 1 e o RRN começa a contagem em 0, o valor do 
+proxRRN e do cont_registros coincidem). O valor de compactações aumenta em 1, o status é resetado para '1' 
+e o topo para -1, indicando que não há mais registros removidos. Já o novo numero de pagina de disco 
+é calculado com a função calcula_pag_disco(). 
 
-Por fim, é dado um fseek para o inicio do arquivo e o cabeçalho é sobrescrito com a função escrever_no_arquivo_cabecalho()
+Por fim, é dado um fseek para o inicio do arquivo e o cabeçalho é 
+sobrescrito com a função escrever_no_arquivo_cabecalho()
 
 */
 void atualizar_reg_cabecalho(reg_cabecalho* reg, FILE* arquivo_saida, int*cont_registro){

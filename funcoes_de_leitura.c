@@ -23,11 +23,13 @@ void ler_reg_cabecalho(FILE* arquivo, reg_cabecalho* reg){
 
 /*
 
-Função responsável por ler todos os campos do registro. Recebe um ponteiro para arquivo e um ponteiro para uma struct do tipo (reg_dados). 
-Então, sao lidos os campos de tamanho fixo com a função le_campos_tam_fixo() e os campos de tamanho variavel com a função le_campos_tam_variavel()
+Função responsável por ler todos os campos do registro. Recebe um ponteiro para 
+arquivo e um ponteiro para uma struct do tipo (reg_dados). 
+Então, sao lidos os campos de tamanho fixo com a função le_campos_tam_fixo() e 
+os campos de tamanho variavel com a função le_campos_tam_variavel()
 
 */
-void le_todos_campos_do_registro(reg_dados* reg, FILE* arquivo_entrada){
+void le_registro(reg_dados* reg, FILE* arquivo_entrada){
   le_campos_tam_fixo(reg,arquivo_entrada);
   le_campos_tam_variavel(reg,arquivo_entrada);
 }
@@ -36,7 +38,8 @@ void le_todos_campos_do_registro(reg_dados* reg, FILE* arquivo_entrada){
 /*
 
 Função responsável por ler os campos de tamanho fixo de um registro de dados. Recebe um ponteiro para
-arquivo e um ponteiro para uma struct do tipo (reg_dados). Os campos são lidos em sequência conforme o número de bytes ocupados, com a função fread().
+arquivo e um ponteiro para uma struct do tipo (reg_dados). 
+Os campos são lidos em sequência conforme o número de bytes ocupados, com a função fread().
 
 */
 void le_campos_tam_fixo(reg_dados* reg, FILE* arquivo_entrada){
@@ -55,11 +58,23 @@ void le_campos_tam_fixo(reg_dados* reg, FILE* arquivo_entrada){
 
 /*
 
-Função responsável por ler os campos de tamanho variavel de um registro de dados. Recebe um ponteiro para arquivo e um ponteiro para uma struct do tipo (reg_dados). Inicialmente é inicializado uma variavel do tipo char, com nome buffer, como '0'. Tambem são declarados os inteiros pos_nomePoPs e pos_nomePais, que indicam a posiçao nas respectivas strings, inicializados como 0, e o inteiro tam_lixo, que indica o tamanho do lixo. 
+Função responsável por ler os campos de tamanho variavel de um registro de dados. 
+Recebe um ponteiro para arquivo e um ponteiro para uma struct do tipo (reg_dados). 
+Inicialmente é inicializado uma variavel do tipo char, com nome buffer, como '0'. 
+Tambem são declarados os inteiros pos_nomePoPs e pos_nomePais, que indicam a posiçao 
+nas respectivas strings, inicializados como 0, e o inteiro tam_lixo, que indica o tamanho do lixo. 
 
-Entao, é feito um loop while() para cada um dos campos variaveis. Enquanto o buffer, que guarda o char lido não for | (que mostra que o campo terminou) nem $ (no caso em que o registro for removido e só houver lixo) é feita a sequencia:  é lido um byte, ao campo desejado, na posição do contaodor pos, é adicionado o char lido (buffer), e a pos é atualizada (aumenta-se 1). Antes de ler um novo campo, a variavel buffer é resetada para '0'. 
+Entao, é feito um loop while() para cada um dos campos variaveis. Enquanto o buffer, 
+que guarda o char lido não for | (que mostra que o campo terminou) nem $ 
+(no caso em que o registro for removido e só houver lixo) é feita a sequencia:  é 
+lido um byte, ao campo desejado, na posição do contaodor pos, é adicionado o char 
+lido (buffer), e a pos é atualizada (aumenta-se 1). Antes de ler um novo campo, a 
+variavel buffer é resetada para '0'. 
 
-Apos ler os campos, o |, na RAM, é removido e substituido por um /0, indicador que a string chegou ao fim. Então, o tamanho do lixo é calculado com base no tamanho dos contadores de posição, tamanho do registro e tamanho dos campos de tamanho fixo. Por fim, se o lixo existe, ou seja, seu tamanho é diferente de 0, é declarada uma string buffer de lixo e o lixo é lido com um fread(). 
+Apos ler os campos, o |, na RAM, é removido e substituido por um /0, indicador que a 
+string chegou ao fim. Então, o tamanho do lixo é calculado com base no tamanho dos contadores 
+de posição, tamanho do registro e tamanho dos campos de tamanho fixo. Por fim, se o lixo existe, 
+ou seja, seu tamanho é diferente de 0, é declarada uma string buffer de lixo e o lixo é lido com um fread(). 
 
 */
 void le_campos_tam_variavel(reg_dados* reg, FILE* arquivo_entrada){
@@ -110,17 +125,22 @@ char buffer = '0'; // armazena character
 
 /*
 
-Função responsável por ler o arquivo completo. Recebe um ponteiro para arquivo e um ponteiro para uma struct do tipo (reg_dados), alem de um ponteiro de inteiro num_RRN, que atualiza o RRN lido. 
+Função responsável por ler o arquivo completo. Recebe um ponteiro para arquivo e um ponteiro para 
+uma struct do tipo (reg_dados), alem de um ponteiro de inteiro num_RRN, que atualiza o RRN lido. 
 
-Se o fread() feito para o primeiro campo do registro nao retornar 0 significa que o arquivo não chegou ao fim. Logo, sera adicionado um \0 na RAM na segunda posição da string removido, marcando seu fim, e serão lidos todos os campos do registro com a função le_todos_campos_do_registro(). Então, o numero do RRN aumenta, já  que será lido um novo registro, e é retornado 1.
+Se o fread() feito para o primeiro campo do registro nao retornar 0 significa que o arquivo não 
+chegou ao fim. Logo, sera adicionado um \0 na RAM na segunda posição da string removido, marcando seu fim, 
+e serão lidos todos os campos do registro com a função le_todos_campos_do_registro(). 
+Então, o numero do RRN aumenta, já  que será lido um novo registro, e é retornado 1.
 
-Se o fread() para o primeiro campo retornar 0 significa que o arquivo chegou ao fim, e a flag é passada a frente por meio de um retorno 0. 
+Se o fread() para o primeiro campo retornar 0 significa que o arquivo chegou ao fim, e 
+a flag é passada a frente por meio de um retorno 0. 
 
 */
 int le_arquivo(reg_dados* reg, FILE* arquivo_entrada, int*num_rrn){
     if(fread(reg->removido,sizeof(char), 1, arquivo_entrada) != 0){//se não chegou ao fim
         reg->removido[1] = '\0';
-        le_todos_campos_do_registro(reg,arquivo_entrada);
+        le_registro(reg,arquivo_entrada);
         (*num_rrn)++;
         return 1;
     }
@@ -142,7 +162,7 @@ a partir de (NULL)(indicador da função zstrktok de continuar a partir da últi
 void ler_dados(char* buffer, reg_dados* novo_reg_dados){   
     char* token;
     int pos_campo = 0;
-    token = zstrtok(buffer, ",");
+    token = separadpr("separa_proximo");
 
     if(token[strlen(token)-1] == ' '){
         token[strlen(token)-1] = '\0';
@@ -151,7 +171,7 @@ void ler_dados(char* buffer, reg_dados* novo_reg_dados){
     while(token){//enquanto não for NULL
         gravar_dados(novo_reg_dados, pos_campo, token);//preenche na struct
         pos_campo++;//aumenta contador de campos 
-        token = zstrtok(NULL, ",");//pega próximo campo
+        token = separador("separa_proximo");//pega próximo campo
         if(token == NULL){
           break;
         }

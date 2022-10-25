@@ -14,7 +14,7 @@ seguida é criado um buffer temporário para armazenar as linhas do arquivo csv.
 Dois ponteiros um para um arquivo de entrada e outro para saída são criados, e
 dois contadores, um para a quantidade de registros lidos e outro para o número
 de páginas de disco são criados. Em seguida, é escrito no arquivo de saída o
-cabeçalho inicial usando a função (escrever_no_arquivo_cabecalho), e primeira
+cabeçalho inicial usando a função (escrever_no_arquivo_cabecalho), e a primeira
 linha do arquivo csv é "pulada" utilizando 2 (fgets).
 
 Em seguida, é feito um loop (while), enquanto (fgets) não retornar nada (o que
@@ -31,7 +31,9 @@ páginas de disco ocupadas é atualizado. Um (fseek) retorna para o início do
 arquivo, e o registro de cabeçalho é sobrescrito utilizando a função
 (escrever_no_arquivo_cabecalho).
 
-Por fim, o arquivo de entrada e saída são fechados com (fclose).
+Por fim, a memória ocupada pelos ponteiros dos registros é liberada com (free) e
+os arquivo de entrada e saída são fechados com (fclose), com (binarioNaTela) sendo
+executado ao fim da função.
 
 */
 void comando1(char *nome_do_arquivo_entrada, char *nome_do_arquivo_saida) {
@@ -76,13 +78,19 @@ void comando1(char *nome_do_arquivo_entrada, char *nome_do_arquivo_saida) {
 
 /*
 
-Função responsável por realizar a funcionalidade 2, em que são criados dois
+Função responsável por realizar a funcionalidade 2, em que é primeiramente aberto um arquivo para
+leitura em binário, com a função abrir_leitura_binario (). São criados dois
 ponteiros, um para registro da dados e outro para registro de cabeçalho. Em
 seguida é lido o registro de cabeçalho e checada a consistencia do arquivo.
 
-Se nao existirem registros, ou seja, o arquivo só possui a pagina de disco referente ao arquivo de cabeçalho, é devolvido a mensagem 'Registro Inexistente' e é dado um return. 
+Se não existirem registros, ou seja, o arquivo só possui a pagina de disco referente ao arquivo de
+cabeçalho, é devolvido a mensagem "Registro inexistente." e o número de páginas de disco é exibido,
+seguido de um return. 
 
-Caso contrario, existem arquivos a ser lidos, e é feito um loop (while). Esse faz a funçao confere_registro (que confere se o registro foi removido e printa-o caso negativo) enquanto nao retornar a flag que o arquivo acabou, ou seja, le os registros e printa-os enquanto houverem registros. 
+Caso contrario, existem arquivos a ser lidos,  é feito um loop (while). Esse faz a função
+confere_registro (que confere se o registro foi removido e printa-o caso negativo) enquanto
+nao retornar a flag que o arquivo acabou, ou seja, le os registros e printa-os enquanto houverem
+registros. 
 
 Entao, printa-se o numero de paginas de disco lidas, da-se free nos ponteiros e fecha-se o arquivo
 
@@ -128,19 +136,43 @@ void comando2(char *nome_do_arquivo_entrada){
 
 /*
 
-Função responsável por realizar a funcionalidade 3, em que são criados dois
-ponteiros, um para registro da dados e outro para registro de cabeçalho. Em
-seguida é lido o registro de cabeçalho e checada a consistencia do arquivo. Tambem sao criadass e inicializadas variaveis inteiras para armazenar o numero de buscas realizadas, a posiçao referente ao campo que será buscado (cada número indica uma posição e representa um campo), o valor que o campo possui, se inteiro, e o numero de registros encontrados nas buscas. Por ultimo uma variavel de tipo char é criada para armazenar o conteudo do campo, se este for uma string. 
+Função responsável por realizar a funcionalidade 3, em que são criados dois ponteiros, um
+para registro da dados e outro para registro de cabeçalho. Em seguida é lido o registro de
+cabeçalho e checada a consistencia do arquivo. Tambem sao criadas e inicializadas
+variaveis inteiras para armazenar o numero de buscas realizadas, a posiçao referente ao
+campo que será buscado (cada número indica uma posição e representa um campo), o valor que
+o campo possui, se inteiro, e o numero de registros encontrados nas buscas. Por ultimo uma
+variavel buffer do tipo char é criada para armazenar o conteudo do campo, se este for uma string. 
 
-Então, é recebido o numero de buscas, e enquanto as buscas não acabarem ocorre um loop "for". Dentro dele, a variavel pos_campo passa a receber o inteiro retornado da função ler_campo(), que representa um campo especifico. 
+Então, é recebido o numero de buscas, e enquanto as buscas não acabarem ocorre um loop
+"for". Dentro dele, primeiramente é printado o número da busca, e em seguida a variável
+pos_campo passa a receber o inteiro retornado da função ler_campo(), que representa um campo especifico. 
 
-Se pos_campo for 0, 2 ou 4, significa que o campo armazena um inteiro. Em seguida, é inicializada a variavel inteira num_RRN, apenas para completar os argumentos necessarios para a função le_arquivo(). Então o conteudo do campo é lido e guardado na variavel valor e o numero de registros encontrados é ressetado como 0. Continuando, entra-se em um loop while(1), que realiza a seguinte serie: le um registro com a função le_arquivo() e verifica se nao é enviada a flag que o arquivo terminou. Se o arquivo não termina (o retorno é diferente de 0), é verificado se o registro existe. Se ele existe, é feita uma comparação do conteudo buscado com o conteudo do registro lido com a função compara_campo_int(), e se o retorno é 1 significa que o registro buscado foi encontrado. Então, se o registro foi encontrado é feito o print do registro desejado, por meio da função printa_busca(), e o numero de registros encontrados aumenta. Agora, se na primeira checagem o retorno é 0, indicando que o arquivo terminou, verifica-se se nao foram encontrados registros, ou seja, se o numero de registros encontrados continua 0. Se for o caso, é enviada a mensagem "Registro inexistente". Por fim, o loop é quebrado. 
+Se pos_campo for 0, 2 ou 4, significa que o campo armazena um inteiro. Em seguida, é
+inicializada a variavel inteira num_RRN, apenas para completar os argumentos necessarios 
+para a função le_arquivo(). Então o conteudo do campo é lido e guardado na variavel valor 
+e o numero de registros encontrados é resetado como 0. Continuando, entra-se em um loop 
+while(1), que realiza a seguinte serie: le um registro com a função le_arquivo() e 
+verifica se nao é enviada a flag que o arquivo terminou. Se o arquivo não termina 
+(o retorno é diferente de 0), é verificado se o registro existe. Se ele existe, é feita 
+uma comparação do conteudo buscado com o conteudo do registro lido com a função 
+compara_campo_inteiro(), e se o retorno é 1 significa que o registro buscado foi encontrado. 
+Então, se o registro foi encontrado é feito o print do registro desejado, por meio da 
+função printa_registro(), e o numero de registros encontrados aumenta. Agora, se na primeira 
+checagem o retorno é 0, indicando que o arquivo terminou, verifica-se se nao foram 
+encontrados registros, ou seja, se o numero de registros encontrados continua 0. Se for o 
+caso, é enviada a mensagem "Registro inexistente". Por fim, o loop é quebrado. 
 
-Se pos_campo for 1, 3, 5 ou 6, significa que o campo armazena uma string. Em seguida, são realizados os mesmos passos da condição anterior, com a diferença que o conteúdo do campo é lido com a função scan_quote_string() e guardado na variavel buffer, e a comparaçao do conteudo buscado é feita pela função compara_campo_string(). 
+Se pos_campo for 1, 3, 5 ou 6, significa que o campo armazena uma string. Em seguida, são 
+realizados os mesmos passos da condição anterior, com a diferença que o conteúdo do campo 
+é lido com a função scan_quote_string() e guardado na variavel buffer, e a comparaçao do 
+conteudo buscado é feita pela função compara_campo_string(). 
 
-Depois de encontrar os resultados de uma busca, é feito um fseek para o inicio da segunda pagina de disco (pulando o registro de cabeçalho), e o processo se repete, até o fim do loop for(). 
+Depois de encontrar os resultados de uma busca, é printado o número de páginas de disco
+ocupadas pelo arquivo, e é feito um fseek para o inicio da segunda  pagina de disco 
+(pulando o registro de cabeçalho), e o processo se repete, até o fim do loop for(). 
 
-Saindo do loop é dado free() nos ponteiros alocados e o arquivo é fechado
+Saindo do loop é dado free() nos ponteiros alocados e o arquivo é fechado.
 */
 void comando3(char *nome_do_arquivo_entrada){
 
@@ -220,17 +252,38 @@ void comando3(char *nome_do_arquivo_entrada){
 
 Função responsável por realizar a funcionalidade 4, em que são criados dois
 ponteiros, um para registro da dados e outro para registro de cabeçalho. Em
-seguida é lido o registro de cabeçalho e checada a consistencia do arquivo. Tambem sao criadass e inicializadas variaveis inteiras para armazenar o numero de buscas realizadas, a posiçao referente ao campo que será buscado (cada número indica uma posição e representa um campo), o valor que o campo possui, se inteiro, e o numero de registros removidos. Por ultimo uma variavel de tipo char é criada para armazenar o conteudo do campo, se este for uma string. 
+seguida é lido o registro de cabeçalho e checada a consistencia do arquivo. Tambem sao 
+criadas e inicializadas variaveis inteiras para armazenar o numero de buscas realizadas,
+a posiçao referente ao campo que será buscado (cada número indica uma posição e representa 
+um campo), o valor que o campo possui, se inteiro, e o numero de registros removidos. 
+Por ultimo uma variavel buffer de tipo char é criada para armazenar o conteudo do campo, se este 
+for uma string. 
 
-Então, é recebido o numero de buscas, e enquanto as buscas não acabarem ocorre um loop "for". Dentro dele, a variavel pos_campo passa a receber o inteiro retornado da função ler_campo(), que representa um campo especifico. 
+Então, é recebido o numero de buscas, e enquanto as buscas não acabarem ocorre um loop 
+"for". Dentro dele, a variavel pos_campo passa a receber o inteiro retornado da função 
+ler_campo(), que representa um campo especifico. 
 
-Se pos_campo for 0, 2 ou 4, significa que o campo armazena um inteiro. Em seguida, é inicializada a variavel inteira num_RRN, que guarda o numero do ultimo RRN lido. Continuando, entra-se em um loop while(), que realiza a seguinte serie enquanto a função le_arquivo() nao retorna a flag que o arquivo terminou: é conferido se o registro foi removido. Caso negativo, é feita uma comparação do conteudo buscado com o conteudo do registro lido com a função compara_campo_int(), e se o retorno é 1 significa que o registro buscado foi encontrado. Então, se o registro foi encontrado ele é removido, por meio da função apaga_registro(), e o numero de registros removidos aumenta. 
+Se pos_campo for 0, 2 ou 4, significa que o campo armazena um inteiro. Em seguida, é 
+inicializada a variavel inteira num_RRN, que guarda o numero do ultimo RRN lido. 
+Continuando, entra-se em um loop while(), que realiza a seguinte serie enquanto a 
+função le_arquivo() nao retorna a flag que o arquivo terminou: é conferido se o registro 
+foi removido. Caso negativo, é feita uma comparação do conteudo buscado com o conteudo do 
+registro lido com a função compara_campo_inteiro(), e se o retorno é 1 significa que o 
+registro buscado foi encontrado. Então, se o registro foi encontrado ele é removido, 
+por meio da função apaga_registro(), e o numero de registros removidos aumenta. 
 
-Se pos_campo for 1, 3, 5 ou 6, significa que o campo armazena uma string. Em seguida, são realizados os mesmos passos da condição anterior, com a diferença que o conteúdo do campo é lido com a função scan_quote_string() e guardado na variavel buffer, e a comparaçao do conteudo buscado é feita pela função compara_campo_string(). 
+Se pos_campo for 1, 3, 5 ou 6, significa que o campo armazena uma string. Em seguida, 
+são realizados os mesmos passos da condição anterior, com a diferença que o conteúdo 
+do campo é lido com a função scan_quote_string() e guardado na variavel buffer, e a 
+comparaçao do conteudo buscado é feita pela função compara_campo_string(). 
 
-Depois de encontrar os resultados de uma busca, é feito um fseek para o inicio do arquivo e o processo se repete, até o fim do loop for(). 
+Depois de encontrar os resultados de uma busca, é feito um fseek para a segunda página de disco
+do arquivo (após o registro de cabeçalho) e o processo se repete, até o fim do loop for(). 
 
-Saindo do loop é atualizado na RAM o numero de registros removidos, no cabeçalho, e em seguida escrito no cabeçalho com a função escrever_no_arquivo_cabecalho(). Entao é dado free() nos ponteiros alocados e o arquivo é fechado
+Saindo do loop é atualizado na RAM o numero de registros removidos, no cabeçalho, e após um
+fseek para o início do arquivo, é o registro de cabeçalho é reescrito com a função 
+escrever_no_arquivo_cabecalho().  Entao é dado free() nos ponteiros alocados e o arquivo é
+fechado, seguido da execução do (binarioNaTela);.
 */
 
 void comando4(char *nome_do_arquivo_entrada){
@@ -337,16 +390,17 @@ que o campo está realmente removido, lê se o encadeamento, o campo do topo
 recebe o encadeamento daquele registro, assim desempilhando os RRNs dos
 registros. Em seguida, utiliza-se (fseek) para retornar 5 bytes, para o início
 do registro, e utilizando a funçãp (escrever_ no_arquivo_dados), sobrescreve-se
-o registro apagado. Caso o campo "removido" não tenha o valor '1', é retornada
-uma mensagem de erro.
+o registro apagado, atualizando o status de removido e o encadeamento.
+Caso o campo "removido" não tenha o valor '1', é retornada uma mensagem de erro, e a 
+memória dos ponteiros dos registros de dados é liberada, e o arquivo é fechado.
 
 Em seguida, é verificado se o número de registros totais é diferente de 0, e se
 for, significa que novos registros foram adicionados, e utilizando a função
 (calcula_pag_disco), o número de páginas de disco do registro de cabeçalho é
 atualizado. Por fim, o "status" do registro é marcado como '1', indicando estar
 consistente, retorna-se para o início do arquivo com (fseek), e o registro de
-cabeçalho é sobrescrito com a função (escrever_no_arquivo_cabecalho), e o
-arquivo é fechado com (fclose).
+cabeçalho é sobrescrito com a função (escrever_no_arquivo_cabecalho), e a memória dos
+ponteiros é liberada arquivo é fechado com (fclose).
 
 */
 void comando5(char *nome_do_arquivo_entrada){
@@ -406,7 +460,6 @@ void comando5(char *nome_do_arquivo_entrada){
       else{ // se registro não estiver removido, erro
         free(novo_reg_dados);
         free(novo_reg_cabecalho);
-        printf("Falha no processamento do arquivo.\n");
         fclose(arquivo_entrada);
         return;
       }
@@ -431,13 +484,29 @@ void comando5(char *nome_do_arquivo_entrada){
 /*
 
 Função responsável por realizar a funcionalidade 6. Recebe uma string com o nome
-do arquivo de entrada que será processado. Inicializa-se um variavel inteira contador de registros como 0. Então o arquivo é aberto para leitura e escrita e sao criados dois ponteiros, um para o registro de dados e um para o registro de cabeçalho. Então, o registro de cabecalho é lido com a funçao ler_reg_cabecalho(), e sua concistencia é checada. 
+do arquivo de entrada que será processado. Inicializa-se um variavel inteira contador 
+de registros como 0. Então o arquivo é aberto para leitura e escrita e sao criados 
+dois ponteiros, um para o registro de dados e um para o registro de cabeçalho. Então, 
+o registro de cabecalho é lido com a funçao ler_reg_cabecalho(), e sua concistencia 
+é checada. 
 
-Se o topo, no registro de cabeçalho, for igual a -1, significa que não há registros removidos, logo não há o que ser compactado. Assim, o numero de compactações é aumentado em 1 e o status ressetado para '1', é feito um fseek para o inicio do arquivo e atualizado o registro de cabeçalho com a função escrever_no_arquivo_cabecalho(). Então o arquivo é fechado e o binario é printado com a função binarioNaTela().
+Se o topo, no registro de cabeçalho, for igual a -1, significa que não há registros 
+removidos, logo não há o que ser compactado. Assim, o numero de compactações é aumentado 
+em 1 e o status ressetado para '1', é feito um fseek para o inicio do arquivo e 
+atualizado o registro de cabeçalho com a função escrever_no_arquivo_cabecalho(). 
+Então o arquivo é fechado e o binario é printado com a função binarioNaTela().
 
-Se o topo for diferente de -1, significa que há registros removidos. Então, é aberto para escrita um arquivo temporário "temp.bin", e escrito o registro de cabeçalho no novo arquivo. Seguindo, entra-se em um loop while() que desfragmenta o arquivo de entrada, escrevendo os registros nao removidos no arquivo temporário, enquanto a função compacta_arquivo() nao retorna a flag que o arquivo chegou ao fim. 
+Se o topo for diferente de -1, significa que há registros removidos. Então, é aberto 
+para escrita um arquivo temporário "temp.bin", e escrito o registro de cabeçalho no 
+novo arquivo. Seguindo, entra-se em um loop while() que desfragmenta o arquivo de entrada, 
+escrevendo os registros nao removidos no arquivo temporário, enquanto a 
+função compacta_arquivo() nao retorna a flag que o arquivo chegou ao fim. 
 
-Por fim, o registro de cabeçalho do arquivo temporário é atualizado com a função atualizar_reg_cabecalho(), e o arquivo temporario é fechado. Então, o arquivo de entrada original é removido usando a função remover_arquivo(), que tambem renomeia o arquivo temporário para o nome do arquivo original. É dado free() nos ponteiros utilizados e fechado o arquivo de entrada. 
+Por fim, o registro de cabeçalho do arquivo temporário é atualizado com a função 
+atualizar_reg_cabecalho(), e o arquivo temporario é fechado. Então, o arquivo de entrada 
+original é removido usando a função remover_arquivo(), que tambem renomeia o arquivo 
+temporário para o nome do arquivo original. É dado free() nos ponteiros utilizados e 
+fechado o arquivo de entrada. 
 
 */
 void comando6(char *nome_do_arquivo_entrada){

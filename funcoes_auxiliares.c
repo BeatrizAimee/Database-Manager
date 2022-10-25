@@ -3,44 +3,26 @@
 #include "funcoes_de_leitura.h"
 #include "funcoes_de_escrita.h"
 
-char* zstrtok(char *str, const char *delim) {
-    static char *s_str = NULL;   /* var to store last address */
-    char *p;
+char* separador(char* string){
+    static char* endereço_string = NULL;//define uma variável estática que armazena o endereço da posição analisada da stringing
+    char* marcador;//define um marcador que aponta para o endereço da posição analisada da string
 
-    if (delim == NULL || (str == NULL && s_str == NULL)){
-        return NULL;
+    if(string == "separa_proximo"){//se a string for "separa_proximo", a função retorna o endereço da posição analisada da string
+        string = endereço_string;
+   }
+
+    if(string[0] == ','){
+        endereço_string++;
+        return ",";
     }
+    marcador = strstr(string, ",");//marca o endereço da primeira ocorrência de uma vírgula na string
+    *marcador = '\0';//substitui a vírgula por um caractere nulo
 
-    if (str == NULL){
-        str = s_str;
-    }
+    endereço_string = (marcador + 1 == NULL) ? NULL : (marcador + 1);//verifica se o marcador aponta para o final da string, se sim, o endereço da string é nulo, se não, o endereço da string é o marcador + 1
 
-    /* if delim is not contained in str, return str */
-    if ((p = strstr(str,delim)) == NULL) {
-        s_str = NULL;
-        return str;
-    }
+    //strcpy(tmp, string);
 
-    /* 
-    * check for consecutive delimiters
-    * if first char is delim, return delim
-    */
-    if (str[0] == delim[0]) {
-        s_str++;
-        return (char *)delim;
-    }
-
-    /* terminate the string */
-    *p = '\0';
-
-    /* save the rest of the string */
-    if ((p+1) != NULL) {
-        s_str = (p + 1);
-    } else {
-        s_str = NULL;
-    }
-
-        return str;
+    return string;//retorna a string temporária
 }
 
 /*
@@ -165,11 +147,17 @@ int calcula_pag_disco(int cont_registros){
 
 /*
 
-Função responsável por conferir se o registro é removido ou não, e caso negativo printar o registro. Recebe o registro de dados e o arquivo de entrada. Declara-se o inteiro num_RRN para mandar como argumento para a função le_arquivo, e o inteiro status que recebe a flag retornada pela função le_arquivo() 
+Função responsável por conferir se o registro é removido ou não, e caso negativo 
+printar o registro. Recebe o registro de dados e o arquivo de entrada. Declara-se 
+o inteiro num_RRN para mandar como argumento para a função le_arquivo, e o 
+inteiro status que recebe a flag retornada pela função le_arquivo() 
 
-Se o status recebeu 1, significa que não é o fim do arquivo. Então, é conferido se o registro foi removido, e caso negativo chama-se a função printa_registro() para printar o registro. O retorno, então, é o repasse da flag do status, 1. 
+Se o status recebeu 1, significa que não é o fim do arquivo. Então, é conferido 
+se o registro foi removido, e caso negativo chama-se a função printa_registro() 
+para printar o registro. O retorno, então, é o repasse da flag do status, 1. 
 
-Se o status recebeu 0, significa que o arquivo chegou ao fim, e a flag recebida pelo status é retornada. 
+Se o status recebeu 0, significa que o arquivo chegou ao fim, e a flag recebida 
+pelo status é retornada. 
 
 */
 int confere_remocao(reg_dados* reg, FILE* arquivo_entrada){
@@ -190,11 +178,18 @@ int confere_remocao(reg_dados* reg, FILE* arquivo_entrada){
 
 /*
 
-Função responsável por compactar o arquivo. Recebe o registro de dados, o arquivo de entrada, o arquivo de saida e o contador de registros. Declara-se o inteiro num_RRN para mandar como argumento para a função le_arquivo, e o inteiro status que recebe a flag retornada pela função le_arquivo() 
+Função responsável por compactar o arquivo. Recebe o registro de dados, o arquivo 
+de entrada, o arquivo de saida e o contador de registros. Declara-se o inteiro 
+num_RRN para mandar como argumento para a função le_arquivo, e o inteiro status 
+que recebe a flag retornada pela função le_arquivo() 
 
-Se o status recebeu 1, significa que não é o fim do arquivo. Então, é conferido se o registro foi removido, e caso negativo o contador de registro aumenta em um e o registro lido é escrito no arquivo de saida com a função escrever_no_arquivo_dados(). O retorno, então, é o repasse da flag do status, 1. 
+Se o status recebeu 1, significa que não é o fim do arquivo. Então, é conferido 
+se o registro foi removido, e caso negativo o contador de registro aumenta em um 
+e o registro lido é escrito no arquivo de saida com a função 
+escrever_no_arquivo_dados(). O retorno, então, é o repasse da flag do status, 1. 
 
-Se o status recebeu 0, significa que o arquivo chegou ao fim, e a flag recebida pelo status é retornada. 
+Se o status recebeu 0, significa que o arquivo chegou ao fim, e a flag 
+recebida pelo status é retornada. 
 
 */
 int compacta_arquivo( reg_dados* reg, FILE* arquivo_entrada, FILE* arquivo_saida, int*contador_reg){
@@ -216,11 +211,19 @@ int compacta_arquivo( reg_dados* reg, FILE* arquivo_entrada, FILE* arquivo_saida
 }
 
 /*
-Função responsável por remover logicamente um registro. Recebe o registro de dados, o arquivo de entrada, o registro de saida e o RRN do registro. 
+Função responsável por remover logicamente um registro. Recebe o registro de dados, 
+o arquivo de entrada, o registro de saida e o RRN do registro. 
 
-Primeiro muda-se na RAM o removido do registro de dados de '0' para '1'. Então, o numero no encadeamento, no registro de dados, passa a ser o numero do topo, que esta no registro de cabecalho. Já o topo passa a receber o valor do RRN do registro removido, criando uma pilha. 
+Primeiro muda-se na RAM o removido do registro de dados de '0' para '1'. Então, o 
+numero no encadeamento, no registro de dados, passa a ser o numero do topo, que 
+esta no registro de cabecalho. Já o topo passa a receber o valor do RRN do 
+registro removido, criando uma pilha. 
 
-Então, é declarada a variavel inteira do byteoffset, que é em seguida calculada, variando com o valor do RRN. É feito um fseek para o byteoffset do RRN desejado, atualizado no arquivo o "removido" com a função escreve_string_no_arquivo() e o encadeamento com um fwrite(). O resto do espaço ate o final do registro é por fim preenchido com lixo, em um loop for() que faz o fwrite() do caracter $.
+Então, é declarada a variavel inteira do byteoffset, que é em seguida calculada, 
+variando com o valor do RRN. É feito um fseek para o byteoffset do RRN desejado, 
+atualizado no arquivo o "removido" com a função escreve_string_no_arquivo() e 
+o encadeamento com um fwrite(). O resto do espaço ate o final do registro é 
+por fim preenchido com lixo, em um loop for() que faz o fwrite() do caracter $.
 */
 void apaga_registro(FILE*arquivo_entrada, reg_dados* reg_dados, reg_cabecalho*reg_cabecalho, int* RRN ){
   
@@ -244,11 +247,20 @@ void apaga_registro(FILE*arquivo_entrada, reg_dados* reg_dados, reg_cabecalho*re
 
 /*
 
-Função responsável por remover o arquivo. Recebe o nome do arquivo temporario e o nome do arquivo de entrada. São inializadas as variaveis inteiras renomear e remover como 1. 
+Função responsável por remover o arquivo. Recebe o nome do arquivo temporario 
+e o nome do arquivo de entrada. São inializadas as variaveis inteiras renomear 
+e remover como 1. 
 
-Primeiro a variavel remover recebe o retorno da função remove(), que remove o arquivo enviado, o arquivo de entrada, e retorna 0 se a operação foi realizada com sucesso. Em seguida, a variavel renomear recebe o retorno da função rename(), que renomeia o arquivo enviado no primeiro argumento (arquivo de saida) para o nome do segundo argumento (arquivo original de entrada) e retorna 0 se a operação for realizada com sucesso
+Primeiro a variavel remover recebe o retorno da função remove(), que remove 
+o arquivo enviado, o arquivo de entrada, e retorna 0 se a operação foi realizada 
+com sucesso. Em seguida, a variavel renomear recebe o retorno da função rename(), 
+que renomeia o arquivo enviado no primeiro argumento (arquivo de saida) para o 
+nome do segundo argumento (arquivo original de entrada) e retorna 0 se a operação 
+for realizada com sucesso
 
-Se ambas operações tem sucesso, ou seja, renomear e remover são iguais a 0, é printado o binario do arquivo compactado com a função binarioNaTela. Caso contrário é printado "Falha no processamento do arquivo". 
+Se ambas operações tem sucesso, ou seja, renomear e remover são iguais a 0, é 
+printado o binario do arquivo compactado com a função binarioNaTela. 
+Caso contrário é printado "Falha no processamento do arquivo". 
 
 */
 void remover_arquivo(char* nome_temp, char* nome_do_arquivo_entrada){
